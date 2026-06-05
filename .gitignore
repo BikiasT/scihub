@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# SciHub local artifacts
+.venv/
+storage/
+scihub.db
+__pycache__/

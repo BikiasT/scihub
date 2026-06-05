@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ pub.title }} — SciHub{% endblock %}
+{% block content %}
+<p class="crumb"><a href="/">← all publications</a></p>
+
+<div class="layout">
+  {# ---------- MAIN PANE: the publication ---------- #}
+  <article class="main-pane">
+    <div class="detail-head">
+      <h1>{{ pub.title }}</h1>
+      {% if pub.is_reproducible() %}
+        <span class="badge badge-ok">✓ Reproducible</span>
+      {% else %}
+        <span class="badge badge-warn">Incomplete</span>
+      {% endif %}
+    </div>
+    <div class="pub-authors">{{ pub.authors }}</div>
+    <div class="meta-line">
+      <span>{{ pub.license }}</span> ·
+      <span>{{ pub.created_at.strftime('%Y-%m-%d') }}</span> ·
+      <span class="mono">{{ pub.slug }}</span>
+    </div>
+
+    {% if pub.abstract %}
+      <h2 class="section-h">Abstract</h2>
+      <p class="abstract">{{ pub.abstract }}</p>
+    {% endif %}
+
+    <h2 class="section-h">Manuscript</h2>
+    {% set manuscripts = by_category.get('manuscript') %}
+    {% if manuscripts %}
+      {% for a in manuscripts %}
+        {% set lower = a.original_name | lower %}
+        <div class="manuscript-item">
+          <div class="file-row">
+            <strong>{{ a.original_name }}</strong>
+            <span class="muted">{{ a.size_bytes | filesize }}
+              · <a href="/publications/{{ pub.slug }}/files/{{ a.id }}">download</a></span>
+          </div>
+          {% if lower.endswith('.pdf') %}
+            <iframe class="preview pdf" src="/publications/{{ pub.slug }}/files/{{ a.id }}?inline=1" title="{{ a.original_name }}"></iframe>
+            {% set p = parsed.get(a.id) %}
+            {% if p %}
+              <details class="parsed" open>
+                <summary>Parsed text{% if p.pages %} · {{ p.pages }} page{{ 's' if p.pages != 1 }}{% endif %}</summary>
+                {% if p.error %}
+                  <p class="muted small">{{ p.error }}</p>
+                {% elif p.text %}
+                  <pre class="parsed-text">{{ p.text }}</pre>
+                {% else %}
+                  <p class="muted small">No extractable text (the PDF may be scanned images).</p>
+                {% endif %}
+              </details>
+            {% endif %}
+          {% elif lower.endswith('.txt') or lower.endswith('.md') or lower.endswith('.markdown') or lower.endswith('.html') %}
+            <iframe class="preview text" src="/publications/{{ pub.slug }}/files/{{ a.id }}?inline=1" title="{{ a.original_name }}"></iframe>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">No manuscript uploaded yet.</p>
+    {% endif %}
+  </article>
+
+  {# ---------- RIGHT RAIL: everything needed to reproduce ---------- #}
+  <aside class="rail">
+    <section class="rail-block checklist">
+      <h2 class="rail-h">Reproducibility</h2>
+      {% for key in required %}
+        <span class="check {{ 'on' if key in present else 'off' }}">
+          {{ '✓' if key in present else '✗' }} {{ key }}
+        </span>
+      {% endfor %}
+      {% if missing %}
+        <p class="muted small">Missing: {{ missing | join(', ') }}.</p>
+      {% endif %}
+    </section>
+
+    {% for key, desc in categories.items() if key != 'manuscript' %}
+    <section class="rail-block">
+      <h3 class="rail-cat">{{ key }}</h3>
+      <p class="cat-desc">{{ desc }}</p>
+      {% if key == 'protocol' %}
+        <div class="star-row">
+          <button id="star-btn" class="star-btn {{ 'on' if starred }}"
+                  data-slug="{{ pub.slug }}" aria-pressed="{{ 'true' if starred else 'false' }}">
+            <span class="star-ico">★</span>
+            <span id="star-count">{{ stars }}</span>
+          </button>
+          <span class="muted small">endorse that this protocol works &amp; is well-defined</span>
+        </div>
+      {% endif %}
+      {% if key == 'code' and github %}
+        <a class="gh-card" href="{{ github.html_url }}" target="_blank" rel="noopener">
+          <div class="gh-name">⬡ {{ github.full_name }}</div>
+          {% if github.error %}
+            <div class="muted small">GitHub repo (couldn't load live details)</div>
+          {% else %}
+            {% if github.description %}<div class="gh-desc">{{ github.description }}</div>{% endif %}
+            <div class="gh-stats">
+              {% if github.language %}<span>● {{ github.language }}</span>{% endif %}
+              <span>★ {{ github.stars }}</span>
+              <span>⑂ {{ github.forks }}</span>
+              {% if github.license %}<span>{{ github.license }}</span>{% endif %}
+            </div>
+            <div class="muted small">branch <span class="mono">{{ github.default_branch }}</span>{% if github.pushed_at %} · updated {{ github.pushed_at }}{% endif %}</div>
+          {% endif %}
+        </a>
+        {% if not github.error %}
+        <div class="gh-clone">
+          <span class="muted small">clone</span>
+          <code class="mono">git clone {{ github.clone_url }}</code>
+        </div>
+        {% endif %}
+      {% elif key == 'code' and pub.code_url %}
+        <div class="file-row"><a href="{{ pub.code_url }}" target="_blank" rel="noopener">🔗 {{ pub.code_url }}</a></div>
+      {% endif %}
+      {% if by_category.get(key) %}
+        <ul class="file-list">
+          {% for a in by_category[key] %}
+          <li class="file-row">
+            <a href="/publications/{{ pub.slug }}/files/{{ a.id }}">⬇ {{ a.original_name }}</a>
+            <span class="muted small">{{ a.size_bytes | filesize }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% elif not (key == 'code' and pub.code_url) %}
+        <p class="muted small">— none —</p>
+      {% endif %}
+    </section>
+    {% endfor %}
+  </aside>
+</div>
+
+<script>
+  const btn = document.getElementById('star-btn');
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      try {
+        const r = await fetch(`/publications/${btn.dataset.slug}/star`, { method: 'POST' });
+        const d = await r.json();
+        document.getElementById('star-count').textContent = d.stars;
+        btn.classList.toggle('on', d.starred);
+        btn.setAttribute('aria-pressed', d.starred ? 'true' : 'false');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+</script>
+{% endblock %}
