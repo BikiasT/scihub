@@ -21,6 +21,7 @@
       {% else %}
         <span class="badge badge-warn">Incomplete</span>
       {% endif %}
+      <span class="star-count" title="Protocol endorsements">★ {{ stars.get(p.id, 0) }}</span>
       <span class="pub-date">{{ p.created_at.strftime('%Y-%m-%d') }}</span>
     </div>
   </li>

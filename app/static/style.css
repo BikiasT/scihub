@@ -104,6 +104,16 @@ a:hover { text-decoration: underline; }
 .rail-h { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 10px; }
 .rail-cat { margin: 0 0 4px; font-size: 15px; text-transform: capitalize; }
 
+/* Protocol stars */
+.star-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.star-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); cursor: pointer; font-size: 14px; font-weight: 600; }
+.star-btn:hover { border-color: var(--warn); }
+.star-btn .star-ico { color: var(--muted); }
+.star-btn.on { border-color: var(--warn); background: rgba(210,153,34,.15); }
+.star-btn.on .star-ico { color: var(--warn); }
+.star-btn:disabled { opacity: .6; cursor: default; }
+.pub-side .star-count { display: block; color: var(--warn); font-size: 13px; margin-top: 8px; }
+
 .checklist .check { display: inline-block; padding: 5px 10px; border-radius: 8px; margin: 0 6px 6px 0; font-size: 13px; text-transform: capitalize; }
 .check.on { background: rgba(63,185,80,.12); color: var(--ok); }
 .check.off { background: rgba(210,153,34,.12); color: var(--warn); }

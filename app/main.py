@@ -7,25 +7,46 @@ Routes
   GET  /publications/{slug}    detail + reproducibility checklist
   GET  /publications/{slug}/files/{artifact_id}   download a file
 """
+import secrets
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    RedirectResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .db import get_db, init_db
 from .github import fetch_repo
-from .models import CATEGORIES, REQUIRED_CATEGORIES, Artifact, Publication
+from .models import (
+    CATEGORIES,
+    REQUIRED_CATEGORIES,
+    Artifact,
+    ProtocolStar,
+    Publication,
+)
 from .pdfparse import extract_text
 from .storage import absolute_path, new_slug, save_upload
 
 BASE_DIR = Path(__file__).resolve().parent
+VOTER_COOKIE = "scihub_voter"
 app = FastAPI(title="SciHub — reproducible publications")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
+
+
+def _star_count(db: Session, publication_id: int) -> int:
+    return db.scalar(
+        select(func.count())
+        .select_from(ProtocolStar)
+        .where(ProtocolStar.publication_id == publication_id)
+    ) or 0
 
 
 @app.on_event("startup")
@@ -47,8 +68,14 @@ templates.env.filters["filesize"] = lambda n: _human_size(int(n))
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request, db: Session = Depends(get_db)):
     pubs = db.scalars(select(Publication).order_by(Publication.created_at.desc())).all()
+    # Protocol star counts, keyed by publication id, for the list cards.
+    rows = db.execute(
+        select(ProtocolStar.publication_id, func.count())
+        .group_by(ProtocolStar.publication_id)
+    ).all()
+    stars = {pid: count for pid, count in rows}
     return templates.TemplateResponse(
-        "index.html", {"request": request, "publications": pubs}
+        "index.html", {"request": request, "publications": pubs, "stars": stars}
     )
 
 
@@ -136,6 +163,14 @@ def detail(slug: str, request: Request, db: Session = Depends(get_db)):
         if a.original_name.lower().endswith(".pdf"):
             parsed[a.id] = extract_text(absolute_path(a.stored_path))
 
+    # Protocol stars: total count + whether this visitor has starred.
+    voter = request.cookies.get(VOTER_COOKIE)
+    starred = bool(voter) and db.scalar(
+        select(ProtocolStar.id).where(
+            ProtocolStar.publication_id == pub.id, ProtocolStar.voter_id == voter
+        )
+    ) is not None
+
     return templates.TemplateResponse(
         "detail.html",
         {
@@ -148,8 +183,44 @@ def detail(slug: str, request: Request, db: Session = Depends(get_db)):
             "missing": pub.missing_required(),
             "github": github,
             "parsed": parsed,
+            "stars": _star_count(db, pub.id),
+            "starred": starred,
         },
     )
+
+
+@app.post("/publications/{slug}/star")
+def toggle_star(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Toggle the current visitor's protocol star for a publication."""
+    pub = db.scalar(select(Publication).where(Publication.slug == slug))
+    if not pub:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    voter = request.cookies.get(VOTER_COOKIE)
+    new_voter = None
+    if not voter:
+        voter = new_voter = secrets.token_hex(16)
+
+    existing = db.scalar(
+        select(ProtocolStar).where(
+            ProtocolStar.publication_id == pub.id, ProtocolStar.voter_id == voter
+        )
+    )
+    if existing:
+        db.delete(existing)
+        starred = False
+    else:
+        db.add(ProtocolStar(publication_id=pub.id, voter_id=voter))
+        starred = True
+    db.commit()
+
+    resp = JSONResponse({"stars": _star_count(db, pub.id), "starred": starred})
+    if new_voter:
+        # 1-year cookie so a returning visitor keeps the same identity.
+        resp.set_cookie(
+            VOTER_COOKIE, new_voter, max_age=31536000, httponly=True, samesite="lax"
+        )
+    return resp
 
 
 @app.get("/publications/{slug}/files/{artifact_id}")

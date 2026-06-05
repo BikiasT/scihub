@@ -23,6 +23,10 @@ python3 -m venv .venv
 - **Reproducibility checklist** — a publication is flagged *Reproducible* only
   when all four required categories (manuscript, data, code, protocol) are present.
 - **Browse & download** — list view, detail page, and per-file downloads.
+- **Star a protocol** — visitors can endorse that a protocol works and is
+  well-defined. Each browser is an anonymous voter (cookie-based) and can toggle
+  its star; counts show on the protocol and on each list card. (Swaps cleanly for
+  real per-user stars once accounts exist.)
 
 ## Layout
 

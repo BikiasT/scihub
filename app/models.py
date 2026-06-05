@@ -6,7 +6,7 @@ Each piece of that bundle is an Artifact tagged with a category.
 """
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -75,3 +75,21 @@ class Artifact(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 
     publication: Mapped["Publication"] = relationship(back_populates="artifacts")
+
+
+class ProtocolStar(Base):
+    """A community endorsement that a publication's protocol works and is
+    well-defined. One per anonymous visitor (identified by a cookie) per
+    publication — visitors can toggle their star on and off.
+    """
+    __tablename__ = "protocol_stars"
+    __table_args__ = (
+        UniqueConstraint("publication_id", "voter_id", name="uq_star_voter"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    publication_id: Mapped[int] = mapped_column(
+        ForeignKey("publications.id", ondelete="CASCADE"), index=True
+    )
+    voter_id: Mapped[str] = mapped_column(String(64), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
