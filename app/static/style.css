@@ -1,0 +1,94 @@
+:root {
+  --bg: #0f1115;
+  --panel: #181b22;
+  --panel-2: #1f232c;
+  --text: #e7e9ee;
+  --muted: #9aa3b2;
+  --accent: #5b8cff;
+  --ok: #3fb950;
+  --warn: #d29922;
+  --border: #2a2f3a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--panel);
+}
+.brand { font-size: 20px; font-weight: 700; color: var(--text); }
+.container { max-width: 860px; margin: 0 auto; padding: 28px 24px 60px; }
+.foot { text-align: center; color: var(--muted); font-size: 13px; padding: 24px; border-top: 1px solid var(--border); }
+
+.btn {
+  display: inline-block; padding: 8px 16px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  font-size: 14px; cursor: pointer;
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-lg { padding: 12px 22px; font-size: 16px; }
+
+.hero h1 { font-size: 32px; margin: 0 0 8px; }
+.hero p { color: var(--muted); max-width: 640px; }
+
+.pub-list { list-style: none; padding: 0; margin: 28px 0 0; }
+.pub-card {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 18px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--panel); margin-bottom: 14px;
+}
+.pub-title { font-size: 18px; font-weight: 600; color: var(--text); }
+.pub-authors { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.pub-abstract { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+.pub-side { text-align: right; white-space: nowrap; }
+.pub-date { display: block; color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge-ok { background: rgba(63,185,80,.15); color: var(--ok); }
+.badge-warn { background: rgba(210,153,34,.15); color: var(--warn); }
+
+.empty { text-align: center; padding: 60px 0; color: var(--muted); }
+
+.form fieldset { border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin: 0 0 20px; background: var(--panel); }
+.form legend { padding: 0 8px; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.form label { display: block; margin-bottom: 14px; font-size: 14px; }
+.form input[type=text], .form input[type=url], .form textarea {
+  width: 100%; margin-top: 6px; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 14px;
+}
+.form input[type=file] { margin-top: 6px; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.req { color: var(--warn); font-size: 12px; font-weight: 600; margin-left: 6px; }
+
+.upload-row { padding: 12px 0; border-top: 1px solid var(--border); }
+.upload-row:first-of-type { border-top: none; }
+.upload-label { margin-bottom: 6px; }
+.cat-name { font-weight: 600; text-transform: capitalize; }
+.cat-desc { color: var(--muted); font-size: 13px; font-weight: 400; margin-left: 8px; }
+.sublabel { display: block; margin-top: 8px; font-size: 13px; color: var(--muted); }
+
+.detail-head { display: flex; align-items: center; gap: 12px; }
+.detail-head h1 { margin: 0; font-size: 26px; }
+.meta-line { color: var(--muted); font-size: 13px; margin: 6px 0 16px; }
+.mono, .monospace { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.abstract { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+
+.checklist { margin: 24px 0; }
+.checklist h2, .artifacts h2 { font-size: 16px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.check { display: inline-block; padding: 6px 12px; border-radius: 8px; margin: 0 8px 8px 0; font-size: 14px; text-transform: capitalize; }
+.check.on { background: rgba(63,185,80,.12); color: var(--ok); }
+.check.off { background: rgba(210,153,34,.12); color: var(--warn); }
+
+.artifact-group { border-top: 1px solid var(--border); padding: 14px 0; }
+.artifact-group h3 { margin: 0 0 8px; font-size: 15px; text-transform: capitalize; }
+.file-list { list-style: none; padding: 0; margin: 0; }
+.file-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }

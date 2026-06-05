@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SciHub{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">🧬 SciHub</a>
+    <nav>
+      <a href="/new" class="btn btn-primary">+ New publication</a>
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="foot">
+    <span>GitHub for science — every publication ships the data, code &amp; protocol to reproduce it.</span>
+  </footer>
+</body>
+</html>

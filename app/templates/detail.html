@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ pub.title }} — SciHub{% endblock %}
+{% block content %}
+<article class="detail">
+  <div class="detail-head">
+    <h1>{{ pub.title }}</h1>
+    {% if pub.is_reproducible() %}
+      <span class="badge badge-ok">✓ Reproducible</span>
+    {% else %}
+      <span class="badge badge-warn">Incomplete</span>
+    {% endif %}
+  </div>
+  <div class="pub-authors">{{ pub.authors }}</div>
+  <div class="meta-line">
+    <span>{{ pub.license }}</span> ·
+    <span>{{ pub.created_at.strftime('%Y-%m-%d') }}</span> ·
+    <span class="mono">{{ pub.slug }}</span>
+  </div>
+
+  {% if pub.abstract %}<p class="abstract">{{ pub.abstract }}</p>{% endif %}
+
+  <section class="checklist">
+    <h2>Reproducibility checklist</h2>
+    {% for key in required %}
+      <div class="check {{ 'on' if key in present else 'off' }}">
+        {{ '✓' if key in present else '✗' }} {{ key }}
+      </div>
+    {% endfor %}
+    {% if missing %}
+      <p class="muted">Missing required: {{ missing | join(', ') }}.</p>
+    {% endif %}
+  </section>
+
+  <section class="artifacts">
+    <h2>Artifacts</h2>
+    {% for key, desc in categories.items() %}
+    <div class="artifact-group">
+      <h3>{{ key }} <span class="cat-desc">{{ desc }}</span></h3>
+      {% if key == 'code' and pub.code_url %}
+        <div class="file-row"><a href="{{ pub.code_url }}" target="_blank" rel="noopener">🔗 {{ pub.code_url }}</a></div>
+      {% endif %}
+      {% if by_category.get(key) %}
+        <ul class="file-list">
+          {% for a in by_category[key] %}
+          <li class="file-row">
+            <a href="/publications/{{ pub.slug }}/files/{{ a.id }}">⬇ {{ a.original_name }}</a>
+            <span class="muted">{{ a.size_bytes | filesize }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% elif not (key == 'code' and pub.code_url) %}
+        <p class="muted small">— none —</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+
+  <p><a href="/">← all publications</a></p>
+</article>
+{% endblock %}

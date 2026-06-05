@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}SciHub — reproducible publications{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Reproducible publications</h1>
+  <p>A preprint is only as good as your ability to rebuild it. Every publication here bundles the <strong>manuscript, data, code &amp; protocol</strong> needed to reproduce — and continue — the work.</p>
+</section>
+
+{% if publications %}
+<ul class="pub-list">
+  {% for p in publications %}
+  <li class="pub-card">
+    <div class="pub-main">
+      <a class="pub-title" href="/publications/{{ p.slug }}">{{ p.title }}</a>
+      <div class="pub-authors">{{ p.authors }}</div>
+      {% if p.abstract %}<p class="pub-abstract">{{ p.abstract[:240] }}{% if p.abstract|length > 240 %}…{% endif %}</p>{% endif %}
+    </div>
+    <div class="pub-side">
+      {% if p.is_reproducible() %}
+        <span class="badge badge-ok">✓ Reproducible</span>
+      {% else %}
+        <span class="badge badge-warn">Incomplete</span>
+      {% endif %}
+      <span class="pub-date">{{ p.created_at.strftime('%Y-%m-%d') }}</span>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="empty">
+  <p>No publications yet.</p>
+  <a href="/new" class="btn btn-primary">Upload the first one →</a>
+</div>
+{% endif %}
+{% endblock %}

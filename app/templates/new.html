@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}New publication — SciHub{% endblock %}
+{% block content %}
+<h1>New publication</h1>
+<p class="muted">Upload everything needed to reproduce your result. Categories marked <span class="req">required</span> must be present to count as reproducible.</p>
+
+<form class="form" action="/publications" method="post" enctype="multipart/form-data">
+  <fieldset>
+    <legend>About</legend>
+    <label>Title
+      <input type="text" name="title" required maxlength="500" placeholder="A reproducible study of…">
+    </label>
+    <label>Authors
+      <input type="text" name="authors" required maxlength="500" placeholder="Ada Lovelace, Alan Turing">
+    </label>
+    <label>Abstract
+      <textarea name="abstract" rows="4" placeholder="Short summary of the work…"></textarea>
+    </label>
+    <label>License
+      <input type="text" name="license" value="CC-BY-4.0" maxlength="100">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Reproducibility bundle</legend>
+    {% for key, desc in categories.items() %}
+    <div class="upload-row">
+      <div class="upload-label">
+        <span class="cat-name">{{ key }}</span>
+        {% if key in required %}<span class="req">required</span>{% endif %}
+        <span class="cat-desc">{{ desc }}</span>
+      </div>
+      <input type="file" name="{{ key }}" multiple>
+      {% if key == 'code' %}
+      <label class="sublabel">…or link an existing repository
+        <input type="url" name="code_url" placeholder="https://github.com/you/project">
+      </label>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </fieldset>
+
+  <button type="submit" class="btn btn-primary btn-lg">Publish</button>
+</form>
+{% endblock %}
