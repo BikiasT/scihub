@@ -67,7 +67,29 @@
     <section class="rail-block">
       <h3 class="rail-cat">{{ key }}</h3>
       <p class="cat-desc">{{ desc }}</p>
-      {% if key == 'code' and pub.code_url %}
+      {% if key == 'code' and github %}
+        <a class="gh-card" href="{{ github.html_url }}" target="_blank" rel="noopener">
+          <div class="gh-name">⬡ {{ github.full_name }}</div>
+          {% if github.error %}
+            <div class="muted small">GitHub repo (couldn't load live details)</div>
+          {% else %}
+            {% if github.description %}<div class="gh-desc">{{ github.description }}</div>{% endif %}
+            <div class="gh-stats">
+              {% if github.language %}<span>● {{ github.language }}</span>{% endif %}
+              <span>★ {{ github.stars }}</span>
+              <span>⑂ {{ github.forks }}</span>
+              {% if github.license %}<span>{{ github.license }}</span>{% endif %}
+            </div>
+            <div class="muted small">branch <span class="mono">{{ github.default_branch }}</span>{% if github.pushed_at %} · updated {{ github.pushed_at }}{% endif %}</div>
+          {% endif %}
+        </a>
+        {% if not github.error %}
+        <div class="gh-clone">
+          <span class="muted small">clone</span>
+          <code class="mono">git clone {{ github.clone_url }}</code>
+        </div>
+        {% endif %}
+      {% elif key == 'code' and pub.code_url %}
         <div class="file-row"><a href="{{ pub.code_url }}" target="_blank" rel="noopener">🔗 {{ pub.code_url }}</a></div>
       {% endif %}
       {% if by_category.get(key) %}

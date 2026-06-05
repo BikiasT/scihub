@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .db import get_db, init_db
+from .github import fetch_repo
 from .models import CATEGORIES, REQUIRED_CATEGORIES, Artifact, Publication
 from .storage import absolute_path, new_slug, save_upload
 
@@ -125,6 +126,9 @@ def detail(slug: str, request: Request, db: Session = Depends(get_db)):
     for a in pub.artifacts:
         by_category.setdefault(a.category, []).append(a)
 
+    # If code is linked to a GitHub repo, pull live metadata for the code card.
+    github = fetch_repo(pub.code_url) if pub.code_url else None
+
     return templates.TemplateResponse(
         "detail.html",
         {
@@ -135,6 +139,7 @@ def detail(slug: str, request: Request, db: Session = Depends(get_db)):
             "by_category": by_category,
             "present": pub.categories_present(),
             "missing": pub.missing_required(),
+            "github": github,
         },
     )
 

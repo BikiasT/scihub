@@ -107,3 +107,12 @@ a:hover { text-decoration: underline; }
 
 .file-list { list-style: none; padding: 0; margin: 6px 0 0; }
 .file-row { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; font-size: 14px; }
+
+/* GitHub code card */
+.gh-card { display: block; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--panel-2); color: var(--text); }
+.gh-card:hover { text-decoration: none; border-color: var(--accent); }
+.gh-name { font-weight: 600; }
+.gh-desc { font-size: 13px; color: var(--muted); margin: 4px 0; }
+.gh-stats { display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; color: var(--muted); margin: 4px 0; }
+.gh-clone { margin-top: 8px; }
+.gh-clone code { display: block; margin-top: 3px; padding: 6px 8px; font-size: 12px; background: #0b0d11; border: 1px solid var(--border); border-radius: 6px; overflow-x: auto; white-space: nowrap; }

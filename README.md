@@ -9,14 +9,17 @@ everything needed to **reproduce** the result — manuscript, data, code, and pr
 ```bash
 python3 -m venv .venv
 ./.venv/bin/pip install -r requirements.txt
-./run.sh            # serves on http://127.0.0.1:8000
+./.venv/bin/python -m app.seed   # optional: add the ReverseZoo example
+./run.sh                         # serves on http://127.0.0.1:8000
 ```
 
 ## What works today
 
 - **Upload a reproducibility bundle** — `/new` lets you attach files to five
   categories: `manuscript`, `data`, `code`, `protocol`, `environment`. Code can
-  instead link an external repo (e.g. GitHub) via a URL.
+  instead **connect a GitHub repository** via a URL — its live metadata
+  (description, language, stars, default branch, clone command) is fetched from
+  the GitHub API and shown as a card. Set `GITHUB_TOKEN` to raise the rate limit.
 - **Reproducibility checklist** — a publication is flagged *Reproducible* only
   when all four required categories (manuscript, data, code, protocol) are present.
 - **Browse & download** — list view, detail page, and per-file downloads.
