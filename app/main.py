@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from .db import get_db, init_db
 from .github import fetch_repo
 from .models import CATEGORIES, REQUIRED_CATEGORIES, Artifact, Publication
+from .pdfparse import extract_text
 from .storage import absolute_path, new_slug, save_upload
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -129,6 +130,12 @@ def detail(slug: str, request: Request, db: Session = Depends(get_db)):
     # If code is linked to a GitHub repo, pull live metadata for the code card.
     github = fetch_repo(pub.code_url) if pub.code_url else None
 
+    # Parse text out of manuscript PDFs so the content shows in the main pane.
+    parsed: dict[int, dict] = {}
+    for a in by_category.get("manuscript", []):
+        if a.original_name.lower().endswith(".pdf"):
+            parsed[a.id] = extract_text(absolute_path(a.stored_path))
+
     return templates.TemplateResponse(
         "detail.html",
         {
@@ -140,6 +147,7 @@ def detail(slug: str, request: Request, db: Session = Depends(get_db)):
             "present": pub.categories_present(),
             "missing": pub.missing_required(),
             "github": github,
+            "parsed": parsed,
         },
     )
 

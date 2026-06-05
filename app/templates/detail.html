@@ -39,6 +39,19 @@
           </div>
           {% if lower.endswith('.pdf') %}
             <iframe class="preview pdf" src="/publications/{{ pub.slug }}/files/{{ a.id }}?inline=1" title="{{ a.original_name }}"></iframe>
+            {% set p = parsed.get(a.id) %}
+            {% if p %}
+              <details class="parsed" open>
+                <summary>Parsed text{% if p.pages %} · {{ p.pages }} page{{ 's' if p.pages != 1 }}{% endif %}</summary>
+                {% if p.error %}
+                  <p class="muted small">{{ p.error }}</p>
+                {% elif p.text %}
+                  <pre class="parsed-text">{{ p.text }}</pre>
+                {% else %}
+                  <p class="muted small">No extractable text (the PDF may be scanned images).</p>
+                {% endif %}
+              </details>
+            {% endif %}
           {% elif lower.endswith('.txt') or lower.endswith('.md') or lower.endswith('.markdown') or lower.endswith('.html') %}
             <iframe class="preview text" src="/publications/{{ pub.slug }}/files/{{ a.id }}?inline=1" title="{{ a.original_name }}"></iframe>
           {% endif %}

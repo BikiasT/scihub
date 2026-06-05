@@ -91,6 +91,9 @@ a:hover { text-decoration: underline; }
 .abstract { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin: 0; }
 
 .manuscript-item { margin-bottom: 18px; }
+.parsed { margin-top: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
+.parsed > summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.parsed-text { margin: 0; padding: 0 16px 16px; max-height: 480px; overflow: auto; white-space: pre-wrap; word-wrap: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.55; color: var(--text); }
 .preview { width: 100%; border: 1px solid var(--border); border-radius: 10px; background: #fff; margin-top: 8px; }
 .preview.pdf { height: 70vh; }
 .preview.text { height: 360px; background: var(--panel-2); }
