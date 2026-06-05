@@ -140,7 +140,9 @@ def detail(slug: str, request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/publications/{slug}/files/{artifact_id}")
-def download(slug: str, artifact_id: int, db: Session = Depends(get_db)):
+def download(
+    slug: str, artifact_id: int, inline: bool = False, db: Session = Depends(get_db)
+):
     art = db.scalar(
         select(Artifact)
         .join(Publication)
@@ -151,6 +153,16 @@ def download(slug: str, artifact_id: int, db: Session = Depends(get_db)):
     path = absolute_path(art.stored_path)
     if not path.exists():
         raise HTTPException(status_code=404, detail="File missing on disk")
+    # inline=1 lets the browser render the file in an <iframe>/preview instead of
+    # forcing a download (used for the manuscript preview pane).
+    headers = None
+    if inline:
+        headers = {"Content-Disposition": f'inline; filename="{art.original_name}"'}
+        return FileResponse(
+            path,
+            media_type=art.content_type or "application/octet-stream",
+            headers=headers,
+        )
     return FileResponse(
         path, filename=art.original_name, media_type=art.content_type or "application/octet-stream"
     )

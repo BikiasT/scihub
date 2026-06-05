@@ -1,41 +1,72 @@
 {% extends "base.html" %}
 {% block title %}{{ pub.title }} — SciHub{% endblock %}
 {% block content %}
-<article class="detail">
-  <div class="detail-head">
-    <h1>{{ pub.title }}</h1>
-    {% if pub.is_reproducible() %}
-      <span class="badge badge-ok">✓ Reproducible</span>
+<p class="crumb"><a href="/">← all publications</a></p>
+
+<div class="layout">
+  {# ---------- MAIN PANE: the publication ---------- #}
+  <article class="main-pane">
+    <div class="detail-head">
+      <h1>{{ pub.title }}</h1>
+      {% if pub.is_reproducible() %}
+        <span class="badge badge-ok">✓ Reproducible</span>
+      {% else %}
+        <span class="badge badge-warn">Incomplete</span>
+      {% endif %}
+    </div>
+    <div class="pub-authors">{{ pub.authors }}</div>
+    <div class="meta-line">
+      <span>{{ pub.license }}</span> ·
+      <span>{{ pub.created_at.strftime('%Y-%m-%d') }}</span> ·
+      <span class="mono">{{ pub.slug }}</span>
+    </div>
+
+    {% if pub.abstract %}
+      <h2 class="section-h">Abstract</h2>
+      <p class="abstract">{{ pub.abstract }}</p>
+    {% endif %}
+
+    <h2 class="section-h">Manuscript</h2>
+    {% set manuscripts = by_category.get('manuscript') %}
+    {% if manuscripts %}
+      {% for a in manuscripts %}
+        {% set lower = a.original_name | lower %}
+        <div class="manuscript-item">
+          <div class="file-row">
+            <strong>{{ a.original_name }}</strong>
+            <span class="muted">{{ a.size_bytes | filesize }}
+              · <a href="/publications/{{ pub.slug }}/files/{{ a.id }}">download</a></span>
+          </div>
+          {% if lower.endswith('.pdf') %}
+            <iframe class="preview pdf" src="/publications/{{ pub.slug }}/files/{{ a.id }}?inline=1" title="{{ a.original_name }}"></iframe>
+          {% elif lower.endswith('.txt') or lower.endswith('.md') or lower.endswith('.markdown') or lower.endswith('.html') %}
+            <iframe class="preview text" src="/publications/{{ pub.slug }}/files/{{ a.id }}?inline=1" title="{{ a.original_name }}"></iframe>
+          {% endif %}
+        </div>
+      {% endfor %}
     {% else %}
-      <span class="badge badge-warn">Incomplete</span>
+      <p class="muted">No manuscript uploaded yet.</p>
     {% endif %}
-  </div>
-  <div class="pub-authors">{{ pub.authors }}</div>
-  <div class="meta-line">
-    <span>{{ pub.license }}</span> ·
-    <span>{{ pub.created_at.strftime('%Y-%m-%d') }}</span> ·
-    <span class="mono">{{ pub.slug }}</span>
-  </div>
+  </article>
 
-  {% if pub.abstract %}<p class="abstract">{{ pub.abstract }}</p>{% endif %}
+  {# ---------- RIGHT RAIL: everything needed to reproduce ---------- #}
+  <aside class="rail">
+    <section class="rail-block checklist">
+      <h2 class="rail-h">Reproducibility</h2>
+      {% for key in required %}
+        <span class="check {{ 'on' if key in present else 'off' }}">
+          {{ '✓' if key in present else '✗' }} {{ key }}
+        </span>
+      {% endfor %}
+      {% if missing %}
+        <p class="muted small">Missing: {{ missing | join(', ') }}.</p>
+      {% endif %}
+    </section>
 
-  <section class="checklist">
-    <h2>Reproducibility checklist</h2>
-    {% for key in required %}
-      <div class="check {{ 'on' if key in present else 'off' }}">
-        {{ '✓' if key in present else '✗' }} {{ key }}
-      </div>
-    {% endfor %}
-    {% if missing %}
-      <p class="muted">Missing required: {{ missing | join(', ') }}.</p>
-    {% endif %}
-  </section>
-
-  <section class="artifacts">
-    <h2>Artifacts</h2>
-    {% for key, desc in categories.items() %}
-    <div class="artifact-group">
-      <h3>{{ key }} <span class="cat-desc">{{ desc }}</span></h3>
+    {% for key, desc in categories.items() if key != 'manuscript' %}
+    <section class="rail-block">
+      <h3 class="rail-cat">{{ key }}</h3>
+      <p class="cat-desc">{{ desc }}</p>
       {% if key == 'code' and pub.code_url %}
         <div class="file-row"><a href="{{ pub.code_url }}" target="_blank" rel="noopener">🔗 {{ pub.code_url }}</a></div>
       {% endif %}
@@ -44,17 +75,15 @@
           {% for a in by_category[key] %}
           <li class="file-row">
             <a href="/publications/{{ pub.slug }}/files/{{ a.id }}">⬇ {{ a.original_name }}</a>
-            <span class="muted">{{ a.size_bytes | filesize }}</span>
+            <span class="muted small">{{ a.size_bytes | filesize }}</span>
           </li>
           {% endfor %}
         </ul>
       {% elif not (key == 'code' and pub.code_url) %}
         <p class="muted small">— none —</p>
       {% endif %}
-    </div>
+    </section>
     {% endfor %}
-  </section>
-
-  <p><a href="/">← all publications</a></p>
-</article>
+  </aside>
+</div>
 {% endblock %}
